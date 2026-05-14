@@ -52,6 +52,94 @@ For AP300 and other encrypted 2nd-gen devices, the config entry can also be inje
 
 See [bluetti-bt-lib supported devices](https://github.com/cinderblock/bluetti-bt-lib#supported-powerstations-and-data)
 
+## Example Dashboard (AP300)
+
+To create a dedicated Bluetti dashboard, go to Settings > Dashboards > Add Dashboard, then switch to the raw configuration editor (three-dot menu > Edit dashboard > Raw configuration editor) and paste the YAML below.
+
+Replace `YOUR_DEVICE_ID` with your device's entity prefix (e.g. `ap3002526010030108` — visible in Settings > Devices).
+
+```yaml
+views:
+  - title: AP300
+    path: ap300
+    icon: mdi:battery-charging
+    type: masonry
+    cards:
+      - type: gauge
+        entity: sensor.YOUR_DEVICE_ID_battery_soc
+        name: Battery
+        unit: '%'
+        min: 0
+        max: 100
+        severity:
+          green: 50
+          yellow: 20
+          red: 0
+        needle: true
+      - type: entities
+        title: Status
+        entities:
+          - entity: sensor.YOUR_DEVICE_ID_time_remaining
+            name: Time Remaining
+          - entity: sensor.YOUR_DEVICE_ID
+            name: Working Mode
+          - entity: sensor.YOUR_DEVICE_ID_charging_mode
+            name: Charging Mode
+      - type: glance
+        title: Power
+        columns: 3
+        entities:
+          - entity: sensor.YOUR_DEVICE_ID_ac_input_power
+            name: AC In
+          - entity: sensor.YOUR_DEVICE_ID_dc_input_power
+            name: Solar In
+          - entity: sensor.YOUR_DEVICE_ID_ac_output_power
+            name: AC Out
+      - type: entities
+        title: Switches
+        show_header_toggle: false
+        entities:
+          - entity: switch.YOUR_DEVICE_ID_ac_output
+            name: AC Output
+          - entity: switch.YOUR_DEVICE_ID_eco_mode_ac
+            name: ECO Mode AC
+          - entity: switch.YOUR_DEVICE_ID_power_lifting
+            name: Power Lifting
+      - type: entities
+        title: Settings
+        show_header_toggle: false
+        entities:
+          - entity: select.YOUR_DEVICE_ID
+            name: Working Mode
+          - entity: select.YOUR_DEVICE_ID_charging_mode
+            name: Charging Mode
+          - entity: select.YOUR_DEVICE_ID_display_timeout
+            name: Display Timeout
+      - type: entities
+        title: AC Input
+        entities:
+          - entity: sensor.YOUR_DEVICE_ID_ac_input_voltage
+            name: Voltage
+          - entity: sensor.YOUR_DEVICE_ID_ac_input_current
+            name: Current
+          - entity: sensor.YOUR_DEVICE_ID_ac_input_frequency
+            name: Frequency
+      - type: entities
+        title: AC Output
+        entities:
+          - entity: sensor.YOUR_DEVICE_ID_ac_output_voltage
+            name: Voltage
+          - entity: sensor.YOUR_DEVICE_ID_ac_output_frequency
+            name: Frequency
+      - type: entities
+        title: Device Info
+        entities:
+          - entity: sensor.YOUR_DEVICE_ID_device_type
+            name: Model
+          - entity: sensor.YOUR_DEVICE_ID_serial_number
+            name: Serial Number
+```
+
 ## Disclaimer
 
 This integration is provided without any warranty or support by Bluetti. Use at your own risk.
