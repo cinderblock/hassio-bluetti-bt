@@ -1,6 +1,9 @@
 """Bluetti Bluetooth Config Flow"""
 
 from __future__ import annotations
+
+from . import _deps  # noqa: F401 — must run before bluetti_bt_lib imports
+
 import re
 import logging
 from typing import Any
@@ -62,24 +65,63 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle user input."""
 
-        # Handle click on "OK" button
         if user_input is not None:
-            discovery_info = self._discovery_info
-            address = discovery_info.address
-            await self.async_set_unique_id(address, raise_on_progress=False)
-            self._abort_if_unique_id_configured()
-            name = re.sub("[^A-Z0-9]+", "", discovery_info.name)
+            if self._discovery_info:
+                # Bluetooth-discovered device — use discovery info
+                discovery_info = self._discovery_info
+                address = discovery_info.address
+                await self.async_set_unique_id(address, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
+                name = re.sub("[^A-Z0-9]+", "", discovery_info.name)
 
-            manufacturer_data = ManufacturerData.from_dict(
-                discovery_info.manufacturer_data
-            )
+                manufacturer_data = ManufacturerData.from_dict(
+                    discovery_info.manufacturer_data
+                )
 
-            data = InitialDeviceConfig(
-                address,
-                name,
-                manufacturer_data.dev_type,
-                manufacturer_data.use_encryption,
-            )
+                data = InitialDeviceConfig(
+                    address,
+                    name,
+                    manufacturer_data.dev_type,
+                    manufacturer_data.use_encryption,
+                )
+            else:
+                # Manual setup — recognize device by address
+                address = user_input[CONF_ADDRESS].strip().upper()
+                await self.async_set_unique_id(address, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
+
+                try:
+                    recognized = await recognize_device(
+                        address, self.hass.loop.create_future
+                    )
+                except Exception as err:
+                    _LOGGER.error("Failed to recognize device at %s: %s", address, err)
+                    return self.async_show_form(
+                        step_id="user",
+                        data_schema=vol.Schema({vol.Required(CONF_ADDRESS, default=address): str}),
+                        errors={"base": "cannot_connect"},
+                    )
+
+                if recognized is None:
+                    return self.async_show_form(
+                        step_id="user",
+                        data_schema=vol.Schema({vol.Required(CONF_ADDRESS, default=address): str}),
+                        errors={"base": "cannot_connect"},
+                    )
+
+                _LOGGER.info(
+                    "Manual setup: device identified as %s (encryption: %s)",
+                    recognized.name,
+                    recognized.encrypted,
+                )
+
+                name = re.sub("[^A-Z0-9]+", "", recognized.full_name)
+                data = InitialDeviceConfig(
+                    address,
+                    name,
+                    recognized.name,
+                    recognized.encrypted,
+                )
 
             optional = OptionalDeviceConfig.from_dict({})
 
@@ -91,16 +133,14 @@ class BluettiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 },
             )
 
-        if not self._discovery_info:
-            return self.async_abort(reason="no_unconfigured_devices")
+        if self._discovery_info:
+            default_address = self._discovery_info.address
+        else:
+            default_address = ""
 
-        # The input from this is not used, we use the discovered and known working address
         data_schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_ADDRESS,
-                    default=self._discovery_info.address,
-                ): str,
+                vol.Required(CONF_ADDRESS, default=default_address): str,
             }
         )
         return self.async_show_form(

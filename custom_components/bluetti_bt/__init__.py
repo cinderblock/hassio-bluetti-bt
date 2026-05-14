@@ -1,6 +1,9 @@
 """Bluetti Bluetooth Integration"""
 
 from __future__ import annotations
+
+from . import _deps  # noqa: F401 — must run before bluetti_bt_lib imports
+
 import asyncio
 import re
 import logging

@@ -2,10 +2,14 @@
   "config": {
     "step": {
       "user": {
+        "description": "Enter the Bluetooth MAC address of the Bluetti device.",
         "data": {
-          "address": "Device"
+          "address": "Bluetooth Address"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to device. Make sure the address is correct and the device is in range."
     },
     "abort": {
       "no_unconfigured_devices": "No devices found"
