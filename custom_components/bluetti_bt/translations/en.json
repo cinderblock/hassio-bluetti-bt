@@ -363,6 +363,9 @@
       "ctrl_split_phase": {
         "name": "Split Phase"
       },
+      "ac_input_on": {
+        "name": "AC Input"
+      },
       "ac_output_on": {
         "name": "AC Output"
       },
