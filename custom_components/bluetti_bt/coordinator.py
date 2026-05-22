@@ -6,8 +6,13 @@ from datetime import timedelta
 import logging
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from bluetti_bt_lib import build_device, DeviceReader, DeviceReaderConfig
+from bluetti_bt_lib.bluetooth.exceptions import (
+    DeviceNotFoundError,
+    ConnectionFailedError,
+    EncryptionHandshakeError,
+)
 
 from .utils import mac_loggable
 from .types import FullDeviceConfig
@@ -72,4 +77,15 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.last_update_success = False
             return None
 
-        return await self.reader.read()
+        try:
+            return await self.reader.read()
+        except (
+            DeviceNotFoundError,
+            ConnectionFailedError,
+            EncryptionHandshakeError,
+        ) as err:
+            # Convert library exceptions to UpdateFailed so HA logs them as a
+            # transient coordinator failure (DEBUG-level on repeat) instead of
+            # the noisy "Unexpected error fetching Bluetti polling coordinator
+            # data" with a full traceback every poll.
+            raise UpdateFailed(str(err)) from err
