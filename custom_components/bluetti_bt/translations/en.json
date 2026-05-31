@@ -307,6 +307,9 @@
       },
       "ctrl_power_off": {
         "name": "Poweroff"
+      },
+      "ctrl_charge_from_grid": {
+        "name": "Charge from Grid"
       }
     },
     "select": {
@@ -330,6 +333,32 @@
       },
        "ctrl_ups_mode": {
         "name": "UPS Mode"
+      },
+      "ctrl_working_mode": {
+        "name": "Working Mode"
+      }
+    },
+    "number": {
+      "ctrl_grid_max_current": {
+        "name": "Grid Max Current"
+      },
+      "ctrl_adv_password_0": {
+        "name": "Pro Password 1"
+      },
+      "ctrl_adv_password_1": {
+        "name": "Pro Password 2"
+      },
+      "ctrl_adv_password_2": {
+        "name": "Pro Password 3"
+      },
+      "ctrl_adv_password_3": {
+        "name": "Pro Password 4"
+      },
+      "soc_range_start": {
+        "name": "SOC Range Start"
+      },
+      "soc_range_end": {
+        "name": "SOC Range End"
       }
     },
     "binary_sensor": {
