@@ -340,7 +340,10 @@
     },
     "number": {
       "ctrl_grid_max_current": {
-        "name": "Grid Max Current"
+        "name": "Grid Max Charging Current"
+      },
+      "ctrl_grid_input_current": {
+        "name": "Grid Max Input Current"
       },
       "ctrl_adv_password_0": {
         "name": "Pro Password 1"
