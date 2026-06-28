@@ -81,7 +81,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+        data = hass.data[DOMAIN].pop(entry.entry_id, None)
+        if data is not None:
+            coordinator = data.get(DATA_COORDINATOR)
+            if coordinator is not None:
+                # Stop the polling coordinator so it can't keep connecting after
+                # the entry is unloaded. Without this, unloading/reloading/deleting
+                # the entry left a zombie coordinator polling the device's single
+                # BLE connection slot forever; re-adding the entry then started a
+                # second poller, and the two contended for the slot and wedged the
+                # device until it had to be physically power-cycled.
+                await coordinator.async_shutdown()
     return unload_ok
 
 
